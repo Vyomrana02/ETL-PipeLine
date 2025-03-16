@@ -1,0 +1,2 @@
+1. run test/generate_csv_data.py
+2. run sql from resources/sql_scripts/table_scripts.sql
