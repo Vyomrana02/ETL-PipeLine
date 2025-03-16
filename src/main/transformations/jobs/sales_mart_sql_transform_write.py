@@ -23,12 +23,11 @@ def sales_mart_calculation_table_write(sales_team_mart_df):
 
     # Rank Salespeople within each store & incentive
     window2 = Window.partitionBy('sales_month', 'store_id').orderBy(desc('total_sales'))
-    sales_team_mart_df = sales_team_mart_df.withColumn('top_performance_rank', dense_rank().over(window2)) \
-        .withColumn('incentive', when(col('top_performance_rank') == 1, col('total_sales') * 0.01).otherwise(lit(0)))
+    sales_team_mart_df = sales_team_mart_df.withColumn('top_performance_rank', dense_rank().over(window2))
 
     # Calculate Incentives for Top Performers
     sales_team_mart_df = sales_team_mart_df.withColumn(
-        'incentive', when(col('top_performance_rank') == 1, col('total_sales') * 0.01).otherwise(None)
+        'incentive', when(col('top_performance_rank') == 1, col('total_sales') * 0.01).otherwise(lit(0))
     )
 
     # Sales Growth Rate (Month-over-Month)

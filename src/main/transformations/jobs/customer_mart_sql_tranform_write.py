@@ -1,11 +1,10 @@
 from pyspark.sql import Window
 from pyspark.sql.functions import (
-    col, sum, max, min, count, lit, substring, avg, datediff, current_date, when, concat, lag
+    col, sum, max, min, count, lit, substring, avg, datediff, current_date, when, concat, lag, months_between
 )
 from resources.dev import config
 from src.main.write.database_write import DatabaseWriter
 from src.main.utility.logging_config import logger
-
 
 def customer_mart_calculation_table_write(final_customer_data_mart_df):
     # Add sales_date_month field for grouping
@@ -27,7 +26,7 @@ def customer_mart_calculation_table_write(final_customer_data_mart_df):
         "customer_lifetime_value", sum("total_sales").over(window_clv)
     )
 
-    # RFM (Recency, Frequency, Monetary) Analysis
+    # Define Purchase Frequency and Monetary Value
     rfm_window = Window.partitionBy("customer_id")
     final_customer_data_mart = final_customer_data_mart.withColumn(
         "last_purchase_month", max("sales_date_month").over(rfm_window)
@@ -36,10 +35,10 @@ def customer_mart_calculation_table_write(final_customer_data_mart_df):
     ).withColumn(
         "purchase_frequency", count("sales_date_month").over(rfm_window)
     ).withColumn(
-        "monetary_value", sum("total_sales").over(rfm_window)
+        "monetary_value", col("customer_lifetime_value") / col("purchase_frequency")  # Average transaction value of whole history
     )
 
-    # Average Monthly Spending
+    # Average Monthly Spending (ie avg purchase monthly)
     final_customer_data_mart = final_customer_data_mart.withColumn(
         "avg_monthly_spending", avg("total_sales").over(rfm_window)
     )
@@ -49,16 +48,17 @@ def customer_mart_calculation_table_write(final_customer_data_mart_df):
         "max_single_transaction", max("total_sales").over(Window.partitionBy("customer_id"))
     )
 
-    # Average Time Between Purchases (in days)
+    # Average Time Between Purchases (in months)
     purchase_date_window = Window.partitionBy("customer_id").orderBy("sales_date_month")
     final_customer_data_mart = final_customer_data_mart.withColumn(
-        "previous_purchase_date", lag("sales_date_month", 1).over(purchase_date_window)
+        "previous_purchase_date",
+        lag("sales_date_month", 1).over(purchase_date_window)  # Get the previous purchase month
     ).withColumn(
         "time_between_purchases",
-        datediff(current_date(), col("previous_purchase_date"))
+        months_between(col("sales_date_month"), col("previous_purchase_date"))  # Difference in months
     ).withColumn(
         "avg_time_between_purchases",
-        avg("time_between_purchases").over(rfm_window)
+        avg("time_between_purchases").over(Window.partitionBy("customer_id"))  # Average time in months
     )
 
     # Determine Inactive Customers
@@ -93,4 +93,3 @@ def customer_mart_calculation_table_write(final_customer_data_mart_df):
         db_writer.write_dataframe(final_customer_data_mart, config.customer_data_mart_table)
     except Exception as e:
         logger.error(f'{e}')
-

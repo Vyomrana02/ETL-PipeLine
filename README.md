@@ -58,25 +58,31 @@ This document provides a detailed explanation of the metrics calculated for the 
 
 ### Metrics in Customers Data Mart
 
-| Metric Name                 | Description                                                                                           |
-|-----------------------------|-------------------------------------------------------------------------------------------------------|
-| **customer_id**             | Unique identifier for each customer.                                                                |
-| **full_name**               | Concatenation of the customer's first and last name.                                                |
-| **address**                 | Complete address of the customer.                                                                   |
-| **phone_number**            | Contact number of the customer.                                                                     |
-| **sales_date_month**        | The month in which sales transactions occurred, in the format `YYYY-MM`.                           |
-| **total_sales**             | Total sales amount made by the customer across all purchases.                                       |
-| **customer_lifetime_value** | Total value of the customer to the business over their entire relationship.                         |
-| **first_purchase_month**    | The month of the customer’s first recorded purchase, in the format `YYYY-MM`.                      |
-| **last_purchase_month**     | The month of the customer’s most recent purchase, in the format `YYYY-MM`.                         |
-| **purchase_frequency**      | Total number of purchases made by the customer.                                                    |
-| **monetary_value**          | Average amount spent by the customer per transaction.                                              |
-| **avg_monthly_spending**    | Average spending by the customer per month.                                                        |
-| **max_single_transaction**  | The highest amount spent by the customer in a single transaction.                                  |
-| **avg_time_between_purchases** | Average number of days between consecutive purchases made by the customer.                        |
-| **inactive_status**         | A boolean value indicating whether the customer is inactive (`TRUE` = inactive).                   |
-| **customer_segment**        | Classification of the customer based on their behavior or spending (e.g., Premium, Regular).        |
+| Metric Name                     | Description                                                                                                   |
+|---------------------------------|---------------------------------------------------------------------------------------------------------------|
+| **customer_id**                 | Unique identifier for each customer.                                                                          |
+| **full_name**                   | Full name of the customer, derived by concatenating first and last names.                                     |
+| **address**                     | Complete address of the customer.                                                                             |
+| **phone_number**                | Contact number of the customer.                                                                               |
+| **sales_date_month**            | The month of a sales transaction, in the format `YYYY-MM`.                                                    |
+| **total_sales**                 | Total purchase made by the customer for a specific month.                                                     |
+| **customer_lifetime_value (CLV)** | Total purchase made by the customer over their entire relationship with the business.                            |
+| **first_purchase_month**        | The month of the customer’s first recorded purchase, in the format `YYYY-MM`.                                 |
+| **last_purchase_month**         | The month of the customer’s most recent purchase, in the format `YYYY-MM`.                                    |
+| **purchase_frequency**          | Total number of months in which the customer made purchases.                                                  |
+| **monetary_value**              | Average transaction value across all purchases, calculated as `customer_lifetime_value / purchase_frequency`. |
+| **avg_monthly_spending**        | Average spending by the customer per month.                                                                   |
+| **max_single_transaction**      | The highest transaction value for the customer in a single month.                                             |
+| **time_between_purchases**      | The time (in months) between consecutive purchases.                                                           |
+| **avg_time_between_purchases**  | Average time (in months) between purchases for each customer.                                                 |
+| **inactive_status**             | A boolean flag indicating whether the customer is inactive (`TRUE` = inactive for 180+ days).                 |
+| **customer_segment**            | Categorization of the customer based on behavior:                                                             |
+|                                 | - **Loyal Customer**: Purchase frequency ≥ 10.                                                                |
+|                                 | - **High-Value Customer**: Monetary value ≥ 50,000.                                                           |
+|                                 | - **At-Risk Customer**: Inactive for over 180 days.                                                           |
+|                                 | - **Occasional Customer**: Customers who don’t meet any of the above criteria.                                |
 
+---
 ---
 
 ### Metrics in Sales Team Data Mart
